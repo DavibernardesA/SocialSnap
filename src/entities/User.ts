@@ -79,8 +79,8 @@ export class User {
   constructor(props: UserProps) {
     this._props = {
       name: props.name ?? '',
-      email: props.email ?? '',
-      password: props.password ?? '',
+      email: props.email,
+      password: props.password,
       avatar: props.avatar ?? '',
       followers: 0,
       following: 0,
