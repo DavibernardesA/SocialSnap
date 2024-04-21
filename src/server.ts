@@ -4,6 +4,7 @@ import { AppDataSource } from './connections/database/data-source';
 import cors from 'cors';
 import routes from './routes/routes';
 import { rateLimitRequest } from './security/rateLimitConfig';
+import { errorMiddleware } from './middlewares/errorMiddleware';
 
 const app = express();
 
@@ -15,6 +16,7 @@ AppDataSource.initialize()
     app.use(cors());
     app.use(express.json());
     app.use(routes);
+    app.use(errorMiddleware);
   })
   .catch(error => console.log(`error initializing database: ${error.message}`));
 
