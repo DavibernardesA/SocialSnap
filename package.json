@@ -4,7 +4,6 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "vitest",
     "migration:create": "typeorm-ts-node-commonjs migration:create ./src/migrations/%npm_config_migration%",
     "migration:run": "typeorm-ts-node-commonjs -d ./src/connections/database/data-source.ts migration:run",
     "migration:revert": "typeorm-ts-node-commonjs -d ./src/data-source.ts migration:revert",

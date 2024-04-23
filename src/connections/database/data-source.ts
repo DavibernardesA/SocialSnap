@@ -10,6 +10,6 @@ export const AppDataSource: DataSource = new DataSource({
   username: envChecker(process.env.DB_USER),
   password: envChecker(process.env.DB_PASS),
   database: envChecker(process.env.DB_NAME),
-  migrations: [`${__dirname}/../**/migrations/*.{ts,js}`],
+  migrations: [`${__dirname}/../../migrations/*.{ts,js}`],
   entities: [`${__dirname}/../../entities/*.{ts,js}`]
 });
