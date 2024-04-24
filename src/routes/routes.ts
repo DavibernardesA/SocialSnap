@@ -8,8 +8,8 @@ const routes: Router = Router();
 
 const userController: UserController = new UserController();
 
-routes.post('auth/login', validateBodyRequest(schemaLogin), userController.login);
-routes.post('auth/register', validateBodyRequest(schemaRegister), userController.store);
+routes.post('/auth/login', validateBodyRequest(schemaLogin), userController.login);
+routes.post('/auth/register', validateBodyRequest(schemaRegister), userController.store);
 routes.get('/user', loggedInUser, userController.index);
 routes.get('/user/:id', loggedInUser, userController.show);
 
