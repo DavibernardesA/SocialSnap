@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { UserController } from '../controllers/userController';
 import { loggedInUser } from '../middlewares/loggedInUser';
 import { validateBodyRequest } from '../schema/validateBody';
-import { schemaLogin, schemaRegister } from '../validations/validateBodyUser';
+import { schemaLogin, schemaRegister, schemaUpdate } from '../validations/validateBodyUser';
 
 const routes: Router = Router();
 
@@ -12,5 +12,6 @@ routes.post('/auth/login', validateBodyRequest(schemaLogin), userController.logi
 routes.post('/auth/register', validateBodyRequest(schemaRegister), userController.store);
 routes.get('/user', loggedInUser, userController.index);
 routes.get('/user/:id', loggedInUser, userController.show);
+routes.put('/profile/:id', loggedInUser, validateBodyRequest(schemaUpdate), userController.update);
 
 export default routes;

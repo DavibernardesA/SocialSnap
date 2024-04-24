@@ -78,4 +78,46 @@ export class UserController {
 
     return res.status(200).json({ user: userData, token });
   }
+
+  async update(req: Request, res: Response) {
+    const { name, email, password, avatar, bio } = req.body;
+    const { id } = req.params;
+
+    const userId: number = parseInt(id);
+
+    if (isNaN(userId)) {
+      throw new InvalidFormatError('id must be a number');
+    }
+
+    const user: User | null = await userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundError('user not found');
+    }
+
+    if (userId !== user.id) {
+      throw new UnauthorizedError('you can only update your account');
+    }
+
+    let encryptedPassword;
+    if (password) {
+      encryptedPassword = await userRepository.encryptPassword(password);
+    }
+
+    const userData: Omit<User, 'id'> = {
+      name: name || user.name,
+      email: email || user.email,
+      password: encryptedPassword ? encryptedPassword : user.password,
+      avatar: avatar || user.avatar,
+      bio: bio || user.bio,
+      followers: user.followers,
+      following: user.following,
+      publications: user.publications
+    };
+
+    Object.assign(user, userData);
+
+    await userRepository.save(user);
+    res.status(200).json('user updated successfully.');
+  }
 }
