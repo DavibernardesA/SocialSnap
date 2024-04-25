@@ -59,7 +59,12 @@ export class UserController {
       throw new NotFoundError('Invalid request: check the provided data.');
     }
 
-    const user: User = users[0];
+    let user;
+    users.length < 1
+      ? (() => {
+          throw new NotFoundError('Invalid request: check the provided data.');
+        })()
+      : (user = users[0]);
 
     if (!user.id) {
       throw new InvalidFormatError('invalid user');
@@ -81,20 +86,15 @@ export class UserController {
 
   async update(req: Request, res: Response) {
     const { name, email, password, avatar, bio } = req.body;
-    const { id } = req.params;
 
-    if (isNaN(parseInt(id))) {
-      throw new InvalidFormatError('id must be a number');
+    if (!String(req.user.id)) {
+      throw new UnauthorizedError('You must be logged in');
     }
 
-    const user: User | null = await userRepository.findById(id);
+    const user: User | null = await userRepository.findById(String(req.user.id));
 
     if (!user) {
       throw new NotFoundError('user not found');
-    }
-
-    if (parseInt(id) !== user.id) {
-      throw new UnauthorizedError('you can only update your account');
     }
 
     let encryptedPassword;
@@ -125,11 +125,12 @@ export class UserController {
 
     const user: User | null = await userRepository.findById(String(req.user.id));
 
-    if (!user) {
-      throw new NotFoundError('user not found');
-    }
+    user
+      ? await userRepository.delete(user)
+      : (() => {
+          throw new NotFoundError('user not found');
+        })();
 
-    await userRepository.delete(user);
     return res.status(200).json('User deleted successfully');
   }
 }
