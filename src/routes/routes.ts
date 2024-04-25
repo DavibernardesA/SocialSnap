@@ -11,6 +11,6 @@ routes.post('/auth/register', validateBodyRequest(schemaRegister), new UserContr
 routes.get('/user', loggedInUser, new UserController().index);
 routes.get('/user/:id', loggedInUser, new UserController().show);
 routes.put('/profile/:id', loggedInUser, validateBodyRequest(schemaUpdate), new UserController().update);
-routes.delete('user/delete', loggedInUser, new UserController().destroy);
+routes.delete('/user/delete', loggedInUser, new UserController().destroy);
 
 export default routes;

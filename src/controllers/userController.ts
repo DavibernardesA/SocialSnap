@@ -5,12 +5,16 @@ import { InvalidFormatError, NotFoundError, UnauthorizedError } from '../helpers
 
 class UserController {
   public async index(_: Request, res: Response) {
-    const users: User[] = await userRepository.find();
-    users.length >= 1
-      ? res.status(200).json(users)
-      : (() => {
-          throw new NotFoundError('users not found');
-        })();
+    const users: Omit<User, 'password'>[] = await userRepository
+      .createQueryBuilder('users')
+      .select(['users.id', 'users.name', 'users.email', 'users.avatar', 'users.bio', 'users.followers', 'users.following', 'users.publications'])
+      .getMany();
+
+    if (users.length >= 1) {
+      res.status(200).json(users);
+    } else {
+      throw new NotFoundError('users not found');
+    }
   }
 
   public async show(req: Request, res: Response) {
