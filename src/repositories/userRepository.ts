@@ -2,6 +2,7 @@ import { AppDataSource } from '../connections/database/data-source';
 import { User } from '../entities/User';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { envChecker } from '../utils/envChecker';
 
 export const userRepository = AppDataSource.getRepository(User).extend({
   async findByEmail(email: string) {
@@ -21,7 +22,8 @@ export const userRepository = AppDataSource.getRepository(User).extend({
     return await bcrypt.compare(encryptedPassword, comparisonPassword);
   },
 
-  async createToken(id: number, jwtPass: string, timestamp: string) {
+  async createToken(id: number, timestamp: string) {
+    const jwtPass: string = envChecker(process.env.JWT_PASS);
     return jwt.sign({ id }, jwtPass, { expiresIn: timestamp });
   }
 });

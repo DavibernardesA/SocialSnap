@@ -2,9 +2,8 @@ import { Request, Response } from 'express';
 import { User } from '../entities/User';
 import { userRepository } from '../repositories/userRepository';
 import { InvalidFormatError, NotFoundError, UnauthorizedError } from '../helpers/api-error';
-import { envChecker } from '../utils/envChecker';
 
-export class UserController {
+class UserController {
   public async index(_: Request, res: Response) {
     const users: User[] = await userRepository.find();
     users.length >= 1
@@ -22,6 +21,7 @@ export class UserController {
           throw new NotFoundError('user not found');
         })();
   }
+
   public async store(req: Request, res: Response) {
     const { name, email, password, avatar, bio } = req.body;
 
@@ -30,7 +30,6 @@ export class UserController {
     if (existIndb.length >= 1) {
       throw new UnauthorizedError('user already exists');
     }
-
     const encryptedPassword = await userRepository.encryptPassword(password);
     const newUser: User = await userRepository.create({
       name,
@@ -48,10 +47,6 @@ export class UserController {
 
   async login(req: Request, res: Response) {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      throw new InvalidFormatError('Invalid request: check the provided data.');
-    }
 
     const users: User[] = await userRepository.findByEmail(String(email));
 
@@ -75,12 +70,8 @@ export class UserController {
     if (!correctPassword) {
       throw new InvalidFormatError('Invalid request: check the provided data.');
     }
-
-    const jwtPass: string = envChecker(process.env.JWT_PASS);
-
-    const token = await userRepository.createToken(user.id, jwtPass, '8h');
+    const token = await userRepository.createToken(user.id, '8h');
     const { password: _, ...userData } = user;
-
     return res.status(200).json({ user: userData, token });
   }
 
@@ -118,6 +109,7 @@ export class UserController {
     await userRepository.save(user);
     res.status(200).json('user updated successfully.');
   }
+
   async destroy(req: Request, res: Response) {
     if (!String(req.user.id)) {
       throw new UnauthorizedError('You must be logged in');
@@ -134,3 +126,5 @@ export class UserController {
     return res.status(200).json('User deleted successfully');
   }
 }
+
+export default UserController;
