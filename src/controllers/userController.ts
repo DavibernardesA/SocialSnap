@@ -83,19 +83,17 @@ export class UserController {
     const { name, email, password, avatar, bio } = req.body;
     const { id } = req.params;
 
-    const userId: number = parseInt(id);
-
-    if (isNaN(userId)) {
+    if (isNaN(parseInt(id))) {
       throw new InvalidFormatError('id must be a number');
     }
 
-    const user: User | null = await userRepository.findOne({ where: { id: userId } });
+    const user: User | null = await userRepository.findById(id);
 
     if (!user) {
       throw new NotFoundError('user not found');
     }
 
-    if (userId !== user.id) {
+    if (parseInt(id) !== user.id) {
       throw new UnauthorizedError('you can only update your account');
     }
 
@@ -119,5 +117,19 @@ export class UserController {
 
     await userRepository.save(user);
     res.status(200).json('user updated successfully.');
+  }
+  async destroy(req: Request, res: Response) {
+    if (!String(req.user.id)) {
+      throw new UnauthorizedError('You must be logged in');
+    }
+
+    const user: User | null = await userRepository.findById(String(req.user.id));
+
+    if (!user) {
+      throw new NotFoundError('user not found');
+    }
+
+    await userRepository.delete(user);
+    return res.status(200).json('User deleted successfully');
   }
 }
