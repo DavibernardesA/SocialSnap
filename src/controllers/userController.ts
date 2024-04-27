@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { User } from '../entities/User';
 import { userRepository } from '../repositories/userRepository';
 import { InvalidFormatError, NotFoundError, UnauthorizedError } from '../helpers/api-error';
+import fileUpload from '../services/fileUpload';
 
 class UserController {
   public async index(_: Request, res: Response) {
@@ -27,7 +28,8 @@ class UserController {
   }
 
   public async store(req: Request, res: Response) {
-    const { name, email, password, avatar, bio } = req.body;
+    const { name, email, password, bio } = req.body;
+    let avatar: Express.Multer.File | undefined = req.file;
 
     const existIndb = await userRepository.findByEmail(email);
 
@@ -35,11 +37,15 @@ class UserController {
       throw new UnauthorizedError('user already exists');
     }
     const encryptedPassword = await userRepository.encryptPassword(password);
+
+    let newImage: Express.Multer.File | string = '';
+    avatar ? (newImage = await fileUpload(name, `profiles/${email}/${name}`, avatar)) : (newImage = '');
+
     const newUser: User = await userRepository.create({
       name,
       email,
       password: encryptedPassword,
-      avatar, //implements file upload
+      avatar: newImage,
       bio,
       followers: 0,
       following: 0,
