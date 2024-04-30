@@ -3,6 +3,7 @@ import { User } from '../entities/User';
 import { userRepository } from '../repositories/userRepository';
 import { InvalidFormatError, NotFoundError, UnauthorizedError } from '../helpers/api-error';
 import fileUpload from '../services/fileUpload';
+import fileUpdate from '../services/fileUpdate';
 
 class UserController {
   public async index(_: Request, res: Response) {
@@ -86,7 +87,8 @@ class UserController {
   }
 
   async update(req: Request, res: Response) {
-    const { name, email, password, avatar, bio } = req.body;
+    const { name, email, password, bio } = req.body;
+    const avatar: Express.Multer.File | undefined = req.file;
 
     if (!String(req.user.id)) {
       throw new UnauthorizedError('You must be logged in');
@@ -103,11 +105,14 @@ class UserController {
       encryptedPassword = await userRepository.encryptPassword(password);
     }
 
+    let newImage: string = '';
+    avatar ? (newImage = await fileUpdate(user, `profiles/${user.email}/${user.name}`, avatar)) : (newImage = '');
+
     const userData: Omit<User, 'id'> = {
       name: name || user.name,
       email: email || user.email,
       password: encryptedPassword ? encryptedPassword : user.password,
-      avatar: avatar || user.avatar,
+      avatar: newImage === '' ? user.avatar : newImage,
       bio: bio || user.bio,
       followers: user.followers,
       following: user.following,
