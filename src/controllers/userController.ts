@@ -4,6 +4,7 @@ import { userRepository } from '../repositories/userRepository';
 import { InvalidFormatError, NotFoundError, UnauthorizedError } from '../helpers/api-error';
 import fileUpload from '../services/fileUpload';
 import fileUpdate from '../services/fileUpdate';
+import fileDelete from '../services/fileDelete';
 
 class UserController {
   public async index(_: Request, res: Response) {
@@ -126,17 +127,18 @@ class UserController {
   }
 
   async destroy(req: Request, res: Response) {
-    if (!String(req.user.id)) {
+    if (!req.user || !req.user.id) {
       throw new UnauthorizedError('You must be logged in');
     }
 
     const user: User | null = await userRepository.findById(String(req.user.id));
 
-    user
-      ? await userRepository.delete(user)
-      : (() => {
-          throw new NotFoundError('user not found');
-        })();
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    await fileDelete(user.avatar, `profiles/${user.email}/${user.name}`);
+    await userRepository.delete(user);
 
     return res.status(200).json('User deleted successfully');
   }
